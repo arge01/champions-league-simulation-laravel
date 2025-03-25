@@ -6,21 +6,28 @@ use Closure;
 
 class CorsMiddleware
 {
-    public function handle($request, Closure $next)
-    {
-        $allowedOrigins = [
-            'http://localhost:3000',
-        ];
+	public function handle($request, Closure $next)
+	{
+		$allowedOrigins = [
+			'http://localhost:3000',
+		];
 
-        $origin = $request->headers->get('Origin');
+		$origin = $request->headers->get('Origin');
 
-        if (in_array($origin, $allowedOrigins)) {
-            return $next($request)
-                ->header('Access-Control-Allow-Origin', $origin)
-                ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-                ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        }
+		if (in_array($origin, $allowedOrigins)) {
+			if ($request->isMethod('OPTIONS')) {
+				$response = response('OK', 200);
+			} else {
+				$response = $next($request);
+			}
 
-        return response('Forbidden', 403);
-    }
+			$response->header('Access-Control-Allow-Origin', $origin);
+			$response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+			$response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+			$response->header('Access-Control-Allow-Credentials', 'true');
+			return $response;
+		}
+
+		return response('Forbidden', 403);
+	}
 }
