@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -10,30 +11,42 @@ use Illuminate\Http\Request;
 
 abstract class ImpController
 {
+  protected $user;
+
   protected $model;
+
+  protected $request;
+  protected $data;
+
   protected $with = [];
 
-  public function __construct(Model $model)
+  public function __construct(Request $request, Model $model)
   {
-    // ->where("user", auth()->user()->id)
-    $this->model = $model;
+    if (!auth('api')->user()) {
+      return response()->json(["auth" => "Error"], 403);
+    }
+    $this->request = $request;
+    $this->model = $model->where("user", auth('api')->user()->id);
+
+    $this->data = $request->json()->all();
+
+    $this->user = $this->user = auth('api')->user();
+
+    $this->data["user"] = $this->user->id;
   }
 
-  private function fill() {
-    return $this->model->where("user", auth()->user()->id);
-  } 
+  private function fillter(?string $column = null, ?string $filter = null) {
+    if ( $column && $filter ) {
+      return $this->model->where($column, $filter);
+    }
 
-  private function data($request) {
-    $data = $request->json()->all();
-    $data["user"] = auth()->user()->id;
-
-    return $data;
+    return $this->model;
   }
 
   protected function error($message) {
     Log::error("Error updating record: " . $message);
     return response()->json(["message" => "Error, the error you received has been logged"], 500);
-  } 
+  }
 
   /**
    * Set relationships to eager load
@@ -50,7 +63,7 @@ abstract class ImpController
   public function all(array $columns = ['*'])
   {
     try {
-      return $this->fill()->with($this->with)->get($columns);
+      return $this->fillter()->with($this->with)->get($columns);
     } catch (Exception $e) {
       return $this->error($e->getMessage());
     }
@@ -62,7 +75,7 @@ abstract class ImpController
   public function get($id, array $columns = ['*'])
   {
     try {
-      return $this->fill()->with($this->with)->findOrFail($id, $columns);
+      return $this->fillter()->with($this->with)->findOrFail($id, $columns);
     } catch (Exception $e) {
       return $this->error($e->getMessage());
     }
@@ -71,13 +84,12 @@ abstract class ImpController
   /**
    * Get records by criteria
    */
-  public function criteria(Request $request, array $columns = ['*'])
+  public function criteria(array $columns = ['*'])
   {
-    $data = $this->data($request);
     try {
-      $query = $this->fill()->with($this->with);
+      $query = $this->fillter()->with($this->with);
 
-      foreach ($data as $criterion) {
+      foreach ($this->data as $criterion) {
         $query->where($criterion[0], $criterion[1], $criterion[2] ?? null);
       }
 
@@ -90,13 +102,11 @@ abstract class ImpController
   /**
    * Create new record
    */
-  public function post(Request $request)
+  public function post()
   {
-    $data = $this->data($request);
-
     DB::beginTransaction();
     try {
-      $record = $this->fill()->create($data);
+      $record = $this->fillter()->create($this->data);
       DB::commit();
       return $record;
     } catch (Exception $e) {
@@ -108,14 +118,12 @@ abstract class ImpController
   /**
    * Update record
    */
-  public function put($id, Request $request)
+  public function put($id)
   {
-    $data = $this->data($request);
-
     DB::beginTransaction();
     try {
-      $record = $this->fill()->findOrFail($id);
-      $record->update($data);
+      $record = $this->fillter()->findOrFail($id);
+      $record->update($this->data);
       DB::commit();
       return $record;
     } catch (Exception $e) {
@@ -132,7 +140,7 @@ abstract class ImpController
   {
     DB::beginTransaction();
     try {
-      $record = $this->fill()->findOrFail($id);
+      $record = $this->fillter()->findOrFail($id);
       $record->delete();
       DB::commit();
       return response()->json(true);
@@ -145,8 +153,8 @@ abstract class ImpController
   /**
    * Partial update
    */
-  public function patch($id, Request $request)
+  public function patch($id)
   {
-    return $this->put($id, $request);
+    return $this->put($id, $this->data);
   }
 }
