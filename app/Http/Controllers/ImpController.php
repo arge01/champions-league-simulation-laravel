@@ -15,7 +15,19 @@ abstract class ImpController
 
   public function __construct(Model $model)
   {
+    // ->where("user", auth()->user()->id)
     $this->model = $model;
+  }
+
+  private function fill() {
+    return $this->model->where("user", auth()->user()->id);
+  } 
+
+  private function data($request) {
+    $data = $request->json()->all();
+    $data["user"] = auth()->user()->id;
+
+    return $data;
   }
 
   protected function error($message) {
@@ -38,7 +50,7 @@ abstract class ImpController
   public function all(array $columns = ['*'])
   {
     try {
-      return $this->model->with($this->with)->get($columns);
+      return $this->fill()->with($this->with)->get($columns);
     } catch (Exception $e) {
       return $this->error($e->getMessage());
     }
@@ -50,7 +62,7 @@ abstract class ImpController
   public function get($id, array $columns = ['*'])
   {
     try {
-      return $this->model->with($this->with)->findOrFail($id, $columns);
+      return $this->fill()->with($this->with)->findOrFail($id, $columns);
     } catch (Exception $e) {
       return $this->error($e->getMessage());
     }
@@ -61,9 +73,9 @@ abstract class ImpController
    */
   public function criteria(Request $request, array $columns = ['*'])
   {
-    $data = $request->json()->all();
+    $data = $this->data($request);
     try {
-      $query = $this->model->with($this->with);
+      $query = $this->fill()->with($this->with);
 
       foreach ($data as $criterion) {
         $query->where($criterion[0], $criterion[1], $criterion[2] ?? null);
@@ -80,11 +92,11 @@ abstract class ImpController
    */
   public function post(Request $request)
   {
-    $data = $request->json()->all();
+    $data = $this->data($request);
 
     DB::beginTransaction();
     try {
-      $record = $this->model->create($data);
+      $record = $this->fill()->create($data);
       DB::commit();
       return $record;
     } catch (Exception $e) {
@@ -98,11 +110,11 @@ abstract class ImpController
    */
   public function put($id, Request $request)
   {
-    $data = $request->json()->all();
+    $data = $this->data($request);
 
     DB::beginTransaction();
     try {
-      $record = $this->model->findOrFail($id);
+      $record = $this->fill()->findOrFail($id);
       $record->update($data);
       DB::commit();
       return $record;
@@ -120,7 +132,7 @@ abstract class ImpController
   {
     DB::beginTransaction();
     try {
-      $record = $this->model->findOrFail($id);
+      $record = $this->fill()->findOrFail($id);
       $record->delete();
       DB::commit();
       return response()->json(true);

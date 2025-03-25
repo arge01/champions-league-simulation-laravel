@@ -9,6 +9,8 @@ class Test extends Model
   protected $table = 'test';
 
 	protected $fillable = [
-    'title', 'desc',
+    'title', 'desc', 'user'
   ];
+
+  protected $hidden = ['user'];
 }
