@@ -85,7 +85,7 @@ class AuthController extends Controller
       $user->save();
 
       $cookie = Cookie::make('token', $token, 60 * 24 * 365);
-      return response()->json(compact('token'))->withCookie($cookie);
+      return response()->json(compact('user', 'token'))->withCookie($cookie);
     } else {
       return response()->json(['error' => 'user not found'], 401);
     }
