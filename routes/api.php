@@ -23,14 +23,14 @@ Route::middleware('cors')->group(function () {
 			Route::post('refresh', 'AuthController@refresh');
 			Route::get('user', 'AuthController@user');
 
-			Route::group(['prefix' => '/test'], function () {
-				Route::get('/all', 'TestController@all');
-				Route::get('/criteria', 'TestController@criteria');
-				Route::delete('/{id}', 'TestController@delete');
-				Route::put('/{id}', 'TestController@put');
-				Route::patch('/{id}', 'TestController@patch');
-				Route::get('/{id}', 'TestController@get');
-				Route::post('', 'TestController@post');
+			Route::group(['prefix' => '/tournamed'], function () {
+				Route::get('/all', 'TournamedController@all');
+				Route::get('/criteria', 'TournamedController@criteria');
+				Route::delete('/{id}', 'TournamedController@delete');
+				Route::put('/{id}', 'TournamedController@put');
+				Route::patch('/{id}', 'TournamedController@patch');
+				Route::get('/{id}', 'TournamedController@get');
+				Route::post('', 'TournamedController@post');
 			});
 		});
 	});
