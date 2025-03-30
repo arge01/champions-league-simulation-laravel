@@ -11,5 +11,12 @@ class TestController extends ImpController
   {
     $this->user = auth()->user();
     parent::__construct($request, $model);
+
+    if (!auth('api')->user()) {
+      return response()->json(["auth" => "Error"], 403);
+    }
+
+    parent::fillter("user", auth('api')->user()->id);
+    parent::request("user", auth('api')->user()->id);
   }
 }

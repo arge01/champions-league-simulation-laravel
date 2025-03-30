@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,28 +21,31 @@ abstract class ImpController
 
   public function __construct(Request $request, Model $model)
   {
-    if (!auth('api')->user()) {
-      return response()->json(["auth" => "Error"], 403);
-    }
     $this->request = $request;
-    $this->model = $model->where("user", auth('api')->user()->id);
-
+    $this->model = $model;
     $this->data = $request->json()->all();
-
-    $this->user = $this->user = auth('api')->user();
-
-    $this->data["user"] = $this->user->id;
   }
 
-  private function fillter(?string $column = null, ?string $filter = null) {
-    if ( $column && $filter ) {
-      return $this->model->where($column, $filter);
+  protected function fillter(?string $column = null, ?string $filter = null)
+  {
+    if ($column && $filter) {
+      $this->model = $this->model->where($column, $filter);
     }
-
     return $this->model;
   }
 
-  protected function error($message) {
+  protected function request(?string $key = null, ?string $value = null)
+  {
+    if ($key && $value) {
+      $this->data[$key] = $value;
+      return $this->data;
+    }
+
+    return $this->data;
+  }
+
+  protected function error($message)
+  {
     Log::error("Error updating record: " . $message);
     return response()->json(["message" => "Error, the error you received has been logged"], 500);
   }
@@ -89,7 +91,7 @@ abstract class ImpController
     try {
       $query = $this->fillter()->with($this->with);
 
-      foreach ($this->data as $criterion) {
+      foreach ($this->request() as $criterion) {
         $query->where($criterion[0], $criterion[1], $criterion[2] ?? null);
       }
 
@@ -106,7 +108,7 @@ abstract class ImpController
   {
     DB::beginTransaction();
     try {
-      $record = $this->fillter()->create($this->data);
+      $record = $this->fillter()->create($this->request());
       DB::commit();
       return $record;
     } catch (Exception $e) {
@@ -123,7 +125,7 @@ abstract class ImpController
     DB::beginTransaction();
     try {
       $record = $this->fillter()->findOrFail($id);
-      $record->update($this->data);
+      $record->update($this->request());
       DB::commit();
       return $record;
     } catch (Exception $e) {
@@ -155,6 +157,6 @@ abstract class ImpController
    */
   public function patch($id)
   {
-    return $this->put($id, $this->data);
+    return $this->put($id, $this->request());
   }
 }
