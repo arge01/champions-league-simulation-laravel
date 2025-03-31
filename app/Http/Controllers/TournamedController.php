@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Hash;
 
+use Illuminate\Support\Str;
+
 class TournamedController extends ImpController
 {
   public function __construct(Request $request, Tournamed $model) {
@@ -18,10 +20,11 @@ class TournamedController extends ImpController
     }
 
     if (request()->isMethod('POST')) {
-      $this->data["key"] = Hash::make($this->data["name"]);
+      $this->data["key"] = substr(md5($this->data["name"]), 0, 8);
     }
 
-    parent::fillter("user", auth('api')->user()->id);
+    parent::filter("user", auth('api')->user()->id);
+    parent::orderBy('updated_at', 'DESC');
     parent::request("user", auth('api')->user()->id);
   }
 }

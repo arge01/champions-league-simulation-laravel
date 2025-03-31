@@ -26,10 +26,24 @@ abstract class ImpController
     $this->data = $request->json()->all();
   }
 
-  protected function fillter(?string $column = null, ?string $filter = null)
+  protected function orderBy(string $column, string $direction = 'ASC')
+  {
+    $this->model = $this->model->orderBy($column, $direction);
+    return $this->model;
+  }
+
+  protected function filter(?string $column = null, ?string $filter = null)
   {
     if ($column && $filter) {
       $this->model = $this->model->where($column, $filter);
+    }
+    return $this->model;
+  }
+
+  protected function withColumn(?string $column = null)
+  {
+    if ($column) {
+      $this->model = $this->model->with($column);
     }
     return $this->model;
   }
@@ -65,7 +79,7 @@ abstract class ImpController
   public function all(array $columns = ['*'])
   {
     try {
-      return $this->fillter()->with($this->with)->get($columns);
+      return $this->filter()->with($this->with)->get($columns);
     } catch (Exception $e) {
       return $this->error($e->getMessage());
     }
@@ -77,7 +91,7 @@ abstract class ImpController
   public function get($id, array $columns = ['*'])
   {
     try {
-      return $this->fillter()->with($this->with)->findOrFail($id, $columns);
+      return $this->filter()->with($this->with)->findOrFail($id, $columns);
     } catch (Exception $e) {
       return $this->error($e->getMessage());
     }
@@ -89,15 +103,24 @@ abstract class ImpController
   public function criteria(array $columns = ['*'])
   {
     try {
-      $query = $this->fillter()->with($this->with);
+      $query = $this->filter()->with($this->with);
 
       foreach ($this->request() as $criterion) {
-        $query->where($criterion[0], $criterion[1], $criterion[2] ?? null);
+        if (is_array($criterion)) {
+          foreach ($criterion as $key => $value) {
+            // array is object
+            if (is_array($value) && isset($value['id'])) {
+              $query->where($key, $value['id']);
+            } else {
+              $query->where($key, $value);
+            }
+          }
+        }
       }
 
       return $query->get($columns);
     } catch (Exception $e) {
-      return $this->error($e->getMessage());
+      return [];
     }
   }
 
@@ -108,11 +131,23 @@ abstract class ImpController
   {
     DB::beginTransaction();
     try {
-      $record = $this->fillter()->create($this->request());
+      $record = $this->filter()->create($this->request());
       DB::commit();
       return $record;
     } catch (Exception $e) {
       DB::rollBack();
+      return $this->error($e->getMessage());
+    }
+  }
+
+  /**
+   * Get criteria
+   */
+  public function get_criteria($key, $column)
+  {
+    try {
+      return $this->filter()->with($this->with)->where($key, $column)->first();
+    } catch (Exception $e) {
       return $this->error($e->getMessage());
     }
   }
@@ -124,7 +159,7 @@ abstract class ImpController
   {
     DB::beginTransaction();
     try {
-      $record = $this->fillter()->findOrFail($id);
+      $record = $this->filter()->findOrFail($id);
       $record->update($this->request());
       DB::commit();
       return $record;
@@ -142,7 +177,7 @@ abstract class ImpController
   {
     DB::beginTransaction();
     try {
-      $record = $this->fillter()->findOrFail($id);
+      $record = $this->filter()->findOrFail($id);
       $record->delete();
       DB::commit();
       return response()->json(true);

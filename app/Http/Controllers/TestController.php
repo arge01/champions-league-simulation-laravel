@@ -16,7 +16,7 @@ class TestController extends ImpController
       return response()->json(["auth" => "Error"], 403);
     }
 
-    parent::fillter("user", auth('api')->user()->id);
+    parent::filter("user", auth('api')->user()->id);
     parent::request("user", auth('api')->user()->id);
   }
 }

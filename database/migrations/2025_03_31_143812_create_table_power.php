@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateTableTournamed extends Migration
+class CreateTablePower extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,13 @@ class CreateTableTournamed extends Migration
      */
     public function up()
     {
-        Schema::create('tournamed', function (Blueprint $table) {
+        Schema::create('power', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('user');
-            $table->string('name');
-            $table->string('key')->unique();
-            $table->text('desc')->nullable();
+            $table->integer('field');
+            $table->integer('outfield');
+            $table->integer('power');
+            $table->integer('playing');
+            $table->integer('fortunate');
             $table->timestamps();
         });
     }
@@ -30,8 +31,6 @@ class CreateTableTournamed extends Migration
      */
     public function down()
     {
-        Schema::table('tournamed', function (Blueprint $table) {
-            //
-        });
+        //
     }
 }

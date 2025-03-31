@@ -9,10 +9,10 @@ class Tournamed extends Model
 	protected $table = 'tournamed';
 
 	protected $fillable = [
-		'id',
 		'name',
 		'key',
 		'desc',
+		'user'
 	];
 
 	protected $hidden = [
