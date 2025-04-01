@@ -124,6 +124,30 @@ abstract class ImpController
     }
   }
 
+  public function pagination($page, $size)
+  {
+    try {
+      $query = $this->filter()->with($this->with);
+
+      foreach ($this->request() as $criterion) {
+        if (is_array($criterion)) {
+          foreach ($criterion as $key => $value) {
+            // array is object
+            if (is_array($value) && isset($value['id'])) {
+              $query->where($key, $value['id']);
+            } else {
+              $query->where($key, $value);
+            }
+          }
+        }
+      }
+
+      return $query->paginate($size);
+    } catch (Exception $e) {
+      return [];
+    }
+  }
+
   /**
    * Create new record
    */

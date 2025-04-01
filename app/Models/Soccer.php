@@ -10,6 +10,7 @@ class Soccer extends Model
 
 	protected $fillable = [
 		'tournamed',
+		'groups',
 		'power',
 		'name',
 		'colors',
@@ -21,6 +22,11 @@ class Soccer extends Model
 	public function power()
 	{
 		return $this->belongsTo('App\Models\Power', 'power', 'id');
+	}
+
+	public function groups()
+	{
+		return $this->belongsTo('App\Models\Groups', 'groups', 'id');
 	}
 
 	public function tournamed()

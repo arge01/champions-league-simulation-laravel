@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Groups;
 use App\Models\Power;
 use App\Models\Soccer;
 use Illuminate\Http\Request;
@@ -13,6 +14,9 @@ class SoccerController extends ImpController
     parent::__construct($request, $model);
 
     parent::orderBy('updated_at', 'DESC');
+    parent::withColumn('power');
+    parent::withColumn('tournamed');
+    parent::withColumn('groups');
   }
 
   public function multi()
@@ -33,6 +37,7 @@ class SoccerController extends ImpController
             "name" => $value["name"],
             "colors" => $value["colors"],
             "country" => $value["country"],
+            "groups" => $value["groups"]["id"],
           ];
 
           try {

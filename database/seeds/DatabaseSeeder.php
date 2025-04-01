@@ -19,5 +19,7 @@ class DatabaseSeeder extends Seeder
 			'active' => 1,
 			'password' => Hash::make('test'),
 		]);
+
+		$this->call(GroupsSeeder::class);
 	}
 }
