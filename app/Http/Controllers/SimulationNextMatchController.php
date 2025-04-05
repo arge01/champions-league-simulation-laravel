@@ -27,23 +27,19 @@ class SimulationNextMatchController extends Controller
 		$this->data = $request->json()->all();
 		$this->tournamed = $tournamed->first();
 
-		$this->qua = QUA::where('tournamed', $this->tournamed->id)
-			->with(['field', 'outfield', 'tournamed'])
+		$this->qua = QUA::with(['field', 'outfield', 'tournamed'])
 			->with('field.power')
 			->with('outfield.power');
 
-		$this->quarter = QUARTER::where('tournamed', $this->tournamed->id)
-			->with(['field', 'outfield', 'tournamed'])
+		$this->quarter = QUARTER::with(['field', 'outfield', 'tournamed'])
 			->with('field.power')
 			->with('outfield.power');
 
-		$this->semi = SEMI::where('tournamed', $this->tournamed->id)
-			->with(['field', 'outfield', 'tournamed'])
+		$this->semi = SEMI::with(['field', 'outfield', 'tournamed'])
 			->with('field.power')
 			->with('outfield.power');
 
-		$this->final = FIN::where('tournamed', $this->tournamed->id)
-			->with(['field', 'outfield', 'tournamed'])
+		$this->final = FIN::with(['field', 'outfield', 'tournamed'])
 			->with('field.power')
 			->with('outfield.power');
 	}
@@ -133,9 +129,17 @@ class SimulationNextMatchController extends Controller
 
 		$this->stayed = $this->stayedNeeded($tournamed);
 
+		$data = [
+			"qua" => $this->qua->where("tournamed", $this->tournamed->id)->get(),
+			"quarter" => $this->quarter->where("tournamed", $this->tournamed->id)->get(),
+			"semi" => $this->semi->where("tournamed", $this->tournamed->id)->get(),
+			"final" => $this->final->where("tournamed", $this->tournamed->id)->get(),
+			"champion" => $this->final->where("tournamed", $this->tournamed->id)->get(),
+		];
+
 		return response()->json(
 			[
-				"data" => $this->showNeeded($tournamed),
+				"data" => $data,
 				"name" => $this->stayed,
 			]
 		);
@@ -165,9 +169,17 @@ class SimulationNextMatchController extends Controller
 			$this->saveNeeded(FIN::class, $this->data);
 		}
 
+		$data = [
+			"qua" => $this->qua->where("tournamed", $this->tournamed->id)->get(),
+			"quarter" => $this->quarter->where("tournamed", $this->tournamed->id)->get(),
+			"semi" => $this->semi->where("tournamed", $this->tournamed->id)->get(),
+			"final" => $this->final->where("tournamed", $this->tournamed->id)->get(),
+			"champion" => $this->final->where("tournamed", $this->tournamed->id)->get(),
+		];
+
 		return response()->json(
 			[
-				"data" => $this->showNeeded($tournamed),
+				"data" => $data,
 				"name" => $this->stayed,
 			]
 		);
