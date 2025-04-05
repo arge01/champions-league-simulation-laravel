@@ -12,7 +12,9 @@ class MatchesController extends ImpController
     parent::__construct($request, $model);
 
     parent::withColumn('field');
+    parent::withColumn('field.power');
     parent::withColumn('outfield');
+    parent::withColumn('outfield.power');
     parent::withColumn('groups');
     parent::withColumn('tournamed');
   }

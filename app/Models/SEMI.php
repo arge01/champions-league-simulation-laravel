@@ -4,17 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Matches extends Model
+class SEMI extends Model
 {
-	protected $table = 'matches';
+	protected $table = 'semi';
 
 	protected $fillable = [
-		"groups",
 		"field",
 		"goal_field",
 		"goal_outfield",
 		"outfield",
 		"tournamed",
+
+		"goal_outfield_penalty",
+		"goal_field_penalty",
+		"is_penalty",
 	];
 
 	public function field()

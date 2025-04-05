@@ -92,6 +92,11 @@ Route::middleware('cors')->group(function () {
 				Route::get('/{id}', 'SoccerController@get');
 				Route::post('', 'SoccerController@post');
 			});
+
+			Route::group(['prefix' => '/the-finals'], function () {
+				Route::get('/get/{tournamed}', 'SimulationNextMatchController@get');
+				Route::post('/create/{tournamed}/{stayed}', 'SimulationNextMatchController@create');
+			});
 		});
 	});
 
